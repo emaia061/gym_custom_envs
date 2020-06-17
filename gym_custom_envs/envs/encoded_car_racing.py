@@ -3,11 +3,11 @@ import torch
 import gym.envs.box2d.car_racing as cr
 from gym import spaces
 
-class EncodedCarRacing(cr.CarRacing){
+class EncodedCarRacing(cr.CarRacing):
 
-    def __init__(self, encoder_path, verbose=1):
+    def __init__(self, encoder_path=None, verbose=1):
         super(EncodedCarRacing, self).__init__(verbose) # call CarRacing init
-        self.encoder = torch.load(encoder_path) # raises exception if not available
+        self.encoder = torch.load(encoder_path) encoder_path if not encoder_path else None # raises exception if not available
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=32, dtype=np.float32)
 
     def step():
@@ -21,7 +21,9 @@ class EncodedCarRacing(cr.CarRacing){
         self.t += 1.0/cr.FPS
 
         self.state = self.render("state_pixels") # returns ndarray
-        self.state = self.encoder(torch.transforms.ToTensor(self.state))
+         if self.encoder:
+             self.state = self.encoder(torch.transforms.ToTensor(self.state))
+
         step_reward = 0
         done = False
         if action is not None: # First step without action, called from reset()
@@ -39,5 +41,3 @@ class EncodedCarRacing(cr.CarRacing){
                 step_reward = -100
 
         return self.state, step_reward, done, {}
-
-}
